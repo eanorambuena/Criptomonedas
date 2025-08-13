@@ -4,9 +4,22 @@ target-version = "py311"
 select = ["E", "F", "I", "UP", "A"]
 ignore = ["D203"]
 
+exclude = ["codeHashing/"]
+
 [tool.black]
 line-length = 120
 target-version = ["py311"]
+    exclude = '''
+        /(
+            \.git
+          | \.mypy_cache
+          | \.venv
+          | _build
+          | build
+          | dist
+          | codeHashing
+        )/
+    '''
 
 [tool.pytest.ini_options]
 addopts = "-ra --cov"
