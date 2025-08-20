@@ -29,16 +29,34 @@ class Blockchain:
         self.elements = {}
 
     def add_block(self, block):
-        return True
         # This is for you to implement
         # Assume only one genesis block is available
         # Now you do not extend, just add it in if it is valid (i.e. prev_hash exists)
         # The function should return the hash of the current block, just so that we know what it is!!!!!!!!!!!!!!!!!!!!!!!
+        
+        if block.prev_hash is None:
+            return None
+            
+        if block.prev_hash  not in self.elements:
+            return None
+        
+        self.elements[block.prev_hash].children.append(block)
+        self.elements[block.hash] = block
+        return block.hash
 
-    def check(self, block_hash):
-        return True
-        # Reimplement this as well
-        # To be fair, not much changes
+    def check(self, hash_pointer):
+        if hash_pointer is None:
+            return True
+        
+        if hash_pointer not in self.elements:
+            return False
+
+        block = self.elements[hash_pointer]
+        real_block_hash = hash(block.serialize()).hex()
+        if real_block_hash != hash_pointer:
+            return False
+
+        return self.check(block.prev_hash)
 
     # Printing is just printing
     def print_blockchain(self):

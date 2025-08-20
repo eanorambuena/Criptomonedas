@@ -1,7 +1,1 @@
 -r requirements.txt
-pre-commit
-ruff
-black
-pytest
-coverage
-pytest-cov
