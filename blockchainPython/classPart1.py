@@ -118,8 +118,8 @@ class Blockchain:
             return False
 
         block = self.elements[hash_pointer]
-        block_hash = hash(block.serialize()).hex()
-        if block_hash != hash_pointer:
+        real_block_hash = hash(block.serialize()).hex()
+        if real_block_hash != hash_pointer:
             return False
 
         return self.check(block.prev_hash)
