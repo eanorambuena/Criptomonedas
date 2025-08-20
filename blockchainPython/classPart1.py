@@ -111,7 +111,18 @@ class Blockchain:
 
     # Just a dummy function for now, will explain below
     def check(self, hash_pointer):
-        return True
+        if hash_pointer is None:
+            return True
+        
+        if hash_pointer not in self.elements:
+            return False
+
+        block = self.elements[hash_pointer]
+        block_hash = hash(block.serialize()).hex()
+        if block_hash != hash_pointer:
+            return False
+
+        return self.check(block.prev_hash)
 
 
 # Let's make a blockchain now:
