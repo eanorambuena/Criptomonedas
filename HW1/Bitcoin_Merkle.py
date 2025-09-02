@@ -105,7 +105,13 @@ class MerkleTree:
         Returns an object of class MerkleProof
         !!!hashesOfInterest are always assumed to be leaves of the Merkle tree!!!
         '''
-        return True
+        #return True
+
+        treeSize = len(self.hashes)
+        nrLeaves = math.log2(treeSize)
+        print(treeSize, nrLeaves)
+
+        return MerkleProof(hashesOfInterest)
 
 class MerkleProof:
     def __init__(self, hashesOfInterest, nrLeaves = None, flags = None, hashes = None):
@@ -271,7 +277,8 @@ def verify_non_inclusion(hash, merkleRoot, proof):
     The method receives a hash, a Merkle root, and a proof that hash does not belong to this Merkle root
     the proof is of type MerkleProof
     '''
-    return True
+    #return True
+    return not verify_inclusion([hash], merkleRoot, proof)
 
 	
 ## Data for testing:
@@ -322,3 +329,4 @@ r_interest = [bytes.fromhex(h) for h in hashesOfInterest]
 proof = MerkleProof(r_interest,16,flags,r_hashes)
 
 print(verify_inclusion(r_interest, tree.root, proof))
+tree.generate_proof(hashesOfInterest)
