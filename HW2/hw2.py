@@ -317,6 +317,7 @@ class S256Point(Point):
             prefix = b'\x03'
         return prefix + x_bytes
 
+    """
     # compute a Bitcoin address from public key in SEC format
     def address(self, compressed=True, testnet=False) -> str:
         '''Returns the address string'''
@@ -325,7 +326,14 @@ class S256Point(Point):
         # The testnet parameter tells us whether we want a testnet of mainnet
         # address
         return 'Not really!'
+    """
 
+    def address(self, compressed=True, testnet=False) -> str:
+        version = b'\x6f' if testnet else b'\x00'
+        key = hash160(self.sec(compressed))
+        checksum = hash256(version + key)[:4]
+        res = version + key + checksum
+        return encode_base58(res)
 
 G = S256Point(
     0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798,
