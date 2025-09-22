@@ -239,8 +239,22 @@ class Signature:
 
     # DER fromat of a raw signature
     # You just return bytes (as usual)
+    #def der(self) -> bytes:
+    #    return hash256(b'Not really!')
     def der(self) -> bytes:
-        return hash256(b'Not really!')
+        prefix = b'\x30'
+        stripped_r = self.r.to_bytes(32, 'big').lstrip(b'\x00')
+        stripped_s = self.s.to_bytes(32, 'big').lstrip(b'\x00')
+        if stripped_r[0] & 0x80:
+            stripped_r = b'\x00' + stripped_r
+        if stripped_s[0] & 0x80:
+            stripped_s = b'\x00' + stripped_s
+        len_r = len(stripped_r).to_bytes(1, 'big')
+        len_s = len(stripped_s).to_bytes(1, 'big')
+        marker = b'\x02'
+        signature_ending = marker + len_r + stripped_r + marker + len_s + stripped_s
+        signature_ending_len = len(signature_ending).to_bytes(1, 'big')
+        return prefix + signature_ending_len + signature_ending
 
 
 # point on secp256k1 curve
@@ -278,6 +292,7 @@ class S256Point(Point):
         return total.x.num == sig.r
 
     # return the point in sec format
+    """
     def sec(self, compressed=True) -> bytes:
         '''returns the binary version of the SEC format'''
         # The object you return has to be in bytes
@@ -289,6 +304,18 @@ class S256Point(Point):
         # Then you go from a point to sec and back; if you get the same point
         # you're good
         return b'Not really!'
+    """
+    def sec(self, compressed=True) -> bytes:
+        y_parity = self.y.num % 2
+        x_bytes = self.x.num.to_bytes(32, 'big')
+        if not compressed:
+            prefix = b'\x04'
+            return prefix + x_bytes + self.y.num.to_bytes(32, 'big')
+        if y_parity == 0:
+            prefix = b'\x02'
+        else:
+            prefix = b'\x03'
+        return prefix + x_bytes
 
     # compute a Bitcoin address from public key in SEC format
     def address(self, compressed=True, testnet=False) -> str:
