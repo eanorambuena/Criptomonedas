@@ -245,6 +245,12 @@ class Signature:
         prefix = b'\x30'
         stripped_r = self.r.to_bytes(32, 'big').lstrip(b'\x00')
         stripped_s = self.s.to_bytes(32, 'big').lstrip(b'\x00')
+        ##### Mejorado por Copilot: Si r o s son cero, aseguramos que stripped_r/s no estén vacíos
+        if len(stripped_r) == 0:
+            stripped_r = b'\x00'
+        if len(stripped_s) == 0:
+            stripped_s = b'\x00'
+        #####
         if stripped_r[0] & 0x80:
             stripped_r = b'\x00' + stripped_r
         if stripped_s[0] & 0x80:
@@ -306,6 +312,10 @@ class S256Point(Point):
         return b'Not really!'
     """
     def sec(self, compressed=True) -> bytes:
+        ##### Mejorado por Copilot: 
+        if self.x is None or self.y is None:
+            raise ValueError("No SEC format for point at infinity")
+        #####
         y_parity = self.y.num % 2
         x_bytes = self.x.num.to_bytes(32, 'big')
         if not compressed:
@@ -329,6 +339,10 @@ class S256Point(Point):
     """
 
     def address(self, compressed=True, testnet=False) -> str:
+        ##### Mejorado por Copilot: 
+        if self.x is None or self.y is None:
+            raise ValueError("No address for point at infinity")
+        #####
         version = b'\x6f' if testnet else b'\x00'
         key = hash160(self.sec(compressed))
         checksum = hash256(version + key)[:4]
