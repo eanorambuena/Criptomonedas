@@ -3,11 +3,11 @@ from hw2 import Signature
 # Dictionary of test cases for DER encoding
 # Each case should have 'r', 's', and 'expected_der' (hex string)
 der_test_cases = [
-    # Example:
-    # {"r": 0x1b8702e527b5410464649721cffdead50944c251fb09727f55e2c54e1e56def,
-    #  "s": 0x2a44f56715d0d9d4fa086539d261219f415fb474a2b74136c43ca462a862eda9,
-    #  "expected_der": "3044022001b8702e527b5410464649721cffdead50944c251fb09727f55e2c54e1e56def02202a44f56715d0d9d4fa086539d261219f415fb474a2b74136c43ca462a862eda9"},
-    # Add your test cases here
+    { # https://github.com/jimmysong/programmingbitcoin/blob/master/code-ch04/answers.py
+        "r": 0x37206a0610995c58074999cb9767b87af4c4978db68c06e8e6e81d282047a7c6,
+        "s": 0x8ca63759c1157ebeaec0d03cecca119fc9a75bf8e6d0fa65c841c8e2738cdaec,
+        "expected_der": "3045022037206a0610995c58074999cb9767b87af4c4978db68c06e8e6e81d282047a7c60221008ca63759c1157ebeaec0d03cecca119fc9a75bf8e6d0fa65c841c8e2738cdaec"
+    },
 ]
 
 def test_der():
