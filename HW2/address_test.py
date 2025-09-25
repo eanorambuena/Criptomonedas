@@ -9,12 +9,13 @@ address_test_cases = [
     #  "compressed": True,
     #  "testnet": True,
     #  "expected_address": "mnWaVwJYCFKK3nCriPFfHD9wLKhz9RVbcy"},
-    # {"x": 0x852e3a8f4e64ee65624872095c466dccd460dcc85d4bab56ec2625b920677014d4,
-    #  "y": 0x895949efe57596ee4ed9bad45fb24b2a9df7686bb700e672f62a56860c1380,
-    #  "compressed": True,
-    #  "testnet": False,
-    #  "expected_address": "17zdCtDZPDt4GfjEzpHHTHwcUL7HBW6k2a"},
-    # Add your test cases here
+    { # https://learnmeabitcoin.com/beginners/guide/keys-addresses/
+        "x": 0xef235aacf90d9f4aadd8c92e4b2562e1d9eb97f0df9ba3b508258739cb013db2,
+        "y": 0x02b4632d08485ff1df2db55b9dafd23347d1c47a457072a1e87be26896549a8737,
+        "compressed": True,
+        "testnet": False,
+        "expected_address": "1EUXSxuUVy2PC5enGXR1a3yxbEjNWMHuem"
+    },
 ]
 
 def test_address():
