@@ -12,7 +12,15 @@ class Scroogecoin:
         self.utxo_pool = set()
 
     def process_transactions(self, tx_list):
-            pass
+        #    pass
+        print("Processing a new batch of transactions...")
+        print(*[json.dumps(json.loads(tx.serialize()), indent=4) for tx in tx_list])
+        print(self.utxo_pool)
+        valid_txs = []
+        for tx in tx_list:
+            are_signatures_valid = False
+            for sig in tx.signatures:
+                pass
 
 
 if __name__ == '__main__':
