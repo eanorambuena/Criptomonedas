@@ -18,9 +18,32 @@ class Scroogecoin:
         print(self.utxo_pool)
         valid_txs = []
         for tx in tx_list:
-            are_signatures_valid = False
-            for sig in tx.signatures:
-                pass
+            are_signatures_valid = tx.CheckSignatures()
+            are_inputs_unspent = all(inp in self.utxo_pool for inp in tx.inputs)
+            are_inputs_valid = all(inp.value > 0 for inp in tx.inputs)
+            are_outputs_valid = all(out.value > 0 for out in tx.outputs)
+            is_balance_valid = sum(inp.value for inp in tx.inputs) >= sum(out.value for out in tx.outputs)
+            if are_signatures_valid and are_inputs_unspent and are_inputs_valid and are_outputs_valid and is_balance_valid:
+                valid_txs.append(tx)
+
+        # Remove the spent UTXOs from the pool
+        for tx in valid_txs:
+            for inp in tx.inputs:
+                self.utxo_pool.discard(inp)
+
+        # Update the UTXO pool with the outputs of the valid transactions
+        for tx in valid_txs:
+            for output in tx.outputs:
+                self.utxo_pool.add(output)
+
+        # Create new Blocks for the valid transactions
+        for tx in valid_txs:
+            block = Block()
+            block.add_transaction(tx)
+            self.blockchain.add_block(block)
+
+        # Return the list of valid transactions
+        return valid_txs
 
 
 if __name__ == '__main__':
