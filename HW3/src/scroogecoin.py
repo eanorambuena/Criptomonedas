@@ -13,32 +13,61 @@ class Scroogecoin:
 
     def process_transactions(self, tx_list: list[Transaction]):
         #    pass
-        print("Processing a new batch of transactions...")
-        print(*[json.dumps(json.loads(tx.serialize()), indent=4) for tx in tx_list])
-        print(f"[UTXO]> {self.utxo_pool}")
+        def log(*msgs: str):
+            IS_LOGGING_ENABLED = True
+            if IS_LOGGING_ENABLED:
+                print(f"[Scroogecoin]> {' '.join(msgs)}")
+
+        log("Processing a new batch of transactions...")
 
         valid_txs: list[Transaction] = []
-        invalid_txs: list[Transaction] = []
+
+        def get_transaction_label(tx: Transaction):
+            names ={
+                trans1.id(): "Tx1",
+                trans2.id(): "Tx2",
+                trans3.id(): "Tx3",
+                trans4.id(): "Tx4",
+                trans5.id(): "Tx5",
+                trans6.id(): "Tx6",
+                trans7.id(): "Tx7"
+            }
+            if tx.id() in names:
+                return names[tx.id()]
+            return f"...{tx.id()[:6]}"
 
         for tx in tx_list:
-            are_signatures_valid = tx.CheckSignatures()
-            is_balance_valid = tx.CheckValues()
-            
-            are_inputs_unspent = all((tx.id(), inp.nrOutput) in self.utxo_pool for idx, inp in enumerate(tx.inputs))
-
-            if not (are_signatures_valid and are_inputs_unspent and is_balance_valid):
-                print(f"Transaction {tx.id()} is invalid.")
-                invalid_txs.append(tx)
+            if tx.id() in self.transactions:
+                log(f"Transaction {get_transaction_label(tx)} is a duplicate.")
                 continue
 
-            print(f"Transaction {tx.id()} is valid.")
             self.transactions[tx.id()] = tx
 
-            for inp in tx.inputs:
-                self.utxo_pool.discard((tx.id(), inp.nrOutput))
+            are_signatures_valid = tx.CheckSignatures()
 
-            for output in tx.outputs:
-                self.utxo_pool.add((tx.id(), tx.outputs.index(output)))
+            if not are_signatures_valid:
+                log(f"Transaction {get_transaction_label(tx)} has invalid signatures.")
+                continue
+
+            is_balance_valid = tx.CheckValues()
+
+            if not is_balance_valid:
+                log(f"Transaction {get_transaction_label(tx)} has invalid input/output values.")
+                continue
+
+            are_inputs_unspent = all((inp.whereCreated, inp.nrOutput) in self.utxo_pool for inp in tx.inputs)
+
+            if not are_inputs_unspent and tx.type != 'createCoins':
+                log(f"Transaction {get_transaction_label(tx)} attempts to double spend UTXOs.")
+                continue
+
+            log(f"Transaction {get_transaction_label(tx)} is valid.")
+
+            for inp in tx.inputs:
+                self.utxo_pool.remove((inp.whereCreated, inp.nrOutput))
+
+            for i in range(len(tx.outputs)):
+                self.utxo_pool.add((tx.id(), i))
 
             valid_txs.append(tx)
             
@@ -49,10 +78,8 @@ class Scroogecoin:
             block = Block(tx_hashes, self.blockchain.head)
             self.blockchain.add_block(block)
 
-        print(f"[UTXO]> {self.utxo_pool}")
-        print(f"Valid transactions: {[tx.id() for tx in valid_txs]}")
-        print(f"Invalid transactions: {[tx.id() for tx in invalid_txs]}")
-        
+        log(f"[UTXO]> {[(get_transaction_label(self.transactions[txid]), idx) for (txid, idx) in self.utxo_pool]}")
+
         # Return the list of valid transactions
         return valid_txs
 
