@@ -1,0 +1,212 @@
+import sys
+sys.path.append('src')
+from ecc import *  # noqa
+from transaction import *  # noqa
+from blockchain import *  # noqa
+from keys import *  # noqa
+from scroogecoin import Scroogecoin
+
+# Tx1:
+outputs = [
+    Output(10, addressA),
+    Output(10, addressB),
+    Output(10, addressC),
+    Output(10, addressD),
+    Output(10, addressD),
+]
+trans1 = Transaction('createCoins', [], outputs)
+to_sign = trans1.dataForSigs
+trans1.signatures[str(pubKeyScrooge)] = privKeyScrooge.sign(to_sign)
+####
+
+# Tx2:
+inputs = []
+input0 = Input(
+    '8ef5f3797d0f245c3435067e611a2ef511266da3e7b96d0f8f7549a5fdb2c626',
+    0,
+    10,
+    addressA
+)
+input1 = Input(
+    '8ef5f3797d0f245c3435067e611a2ef511266da3e7b96d0f8f7549a5fdb2c626',
+    1,
+    10,
+    addressB
+)
+inputs.append(input0)
+inputs.append(input1)
+outputs = []
+out0 = Output(20, addressC)
+outputs.append(out0)
+trans2 = Transaction('payCoins', inputs, outputs)
+toSign = trans2.dataForSigs
+sigBob = pkB.sign(toSign)
+trans2.signatures[str(addressB)] = sigBob
+sigAlice = pkA.sign(toSign)
+trans2.signatures[str(addressA)] = sigAlice
+#####
+
+# TX3:
+inputs = []
+input0 = Input(
+    '9f94542b0898ffaa65fcf397c07e59fcb8d49e7809879c72983dcf7caf88e440',
+    0,
+    20,
+    addressC
+)
+inputs.append(input0)
+outputs = []
+out0 = Output(10, addressC)
+out1 = Output(10, addressD)
+outputs.append(out0)
+outputs.append(out1)
+trans3 = Transaction('payCoins', inputs, outputs)
+toSign = trans3.dataForSigs
+sigC = pkC.sign(toSign)
+trans3.signatures[str(addressC)] = sigC
+#####
+
+# TX4 -- double spend
+inputs = []
+input0 = Input(
+    '9f94542b0898ffaa65fcf397c07e59fcb8d49e7809879c72983dcf7caf88e440',
+    0,
+    20,
+    addressC
+)
+inputs.append(input0)
+outputs = []
+out1 = Output(20, addressD)
+outputs.append(out1)
+trans4 = Transaction('payCoins', inputs, outputs)
+toSign = trans4.dataForSigs
+sigC = pkC.sign(toSign)
+trans4.signatures[str(addressC)] = sigC
+#####
+
+# TX5 -- bad sig
+inputs = []
+input0 = Input(
+    '8ef5f3797d0f245c3435067e611a2ef511266da3e7b96d0f8f7549a5fdb2c626',
+    4,
+    10,
+    addressE
+)
+inputs.append(input0)
+outputs = []
+out1 = Output(10, addressD)
+outputs.append(out1)
+trans5 = Transaction('payCoins', inputs, outputs)
+toSign = trans5.dataForSigs
+sigC = pkC.sign(toSign)
+trans5.signatures[str(addressC)] = sigC
+#####
+
+# TX6-- good tx
+inputs = []
+input0 = Input(
+    '1f57f33ad501e031fb7de02ca681876a9a0a3ad6cefedae3b79d6280da7078ce',
+    1,
+    10,
+    addressD
+)
+inputs.append(input0)
+outputs = []
+out0 = Output(10, addressE)
+outputs.append(out0)
+trans6 = Transaction('payCoins', inputs, outputs)
+toSign = trans6.dataForSigs
+sigD = pkD.sign(toSign)
+trans6.signatures[str(addressD)] = sigD
+#####
+
+# TX7-- good tx
+inputs = []
+input0 = Input(
+    'a7452e6d420b35b413f16fa7d32d6b8282d004f887b354cc50e9f3ec77defcb9',
+    0,
+    10,
+    addressE
+)
+inputs.append(input0)
+outputs = []
+out0 = Output(10, addressA)
+outputs.append(out0)
+trans7 = Transaction('payCoins', inputs, outputs)
+toSign = trans7.dataForSigs
+sigE = pkE.sign(toSign)
+trans7.signatures[str(addressE)] = sigE
+#####
+
+
+def test_scroogecoin():
+    test = Scroogecoin()
+    test.process_transactions([
+        trans1,
+        trans2,
+        trans3,
+        trans4,
+        trans5,
+        trans6,
+        trans7,
+        trans1,
+        trans3,
+    ])
+
+    # Expected blockchain keys and block info
+    expected_blocks = [
+        {
+            'key': 'd42cc9926cb75f115da4e2f852e7a297ec39fe36f5ff3e3514015ab47f9b7b87',
+            'tx_hashes': [
+                '8ef5f3797d0f245c3435067e611a2ef511266da3e7b96d0f8f7549a5fdb2c626',
+                '9f94542b0898ffaa65fcf397c07e59fcb8d49e7809879c72983dcf7caf88e440',
+            ],
+            'prev': None,
+        },
+        {
+            'key': '06aa06c86f6ad6064808362db63c4cdf4a865c11cd7f89833f63a49b2195eaff',
+            'tx_hashes': [
+                '1f57f33ad501e031fb7de02ca681876a9a0a3ad6cefedae3b79d6280da7078ce',
+                'a7452e6d420b35b413f16fa7d32d6b8282d004f887b354cc50e9f3ec77defcb9',
+            ],
+            'prev': 'd42cc9926cb75f115da4e2f852e7a297ec39fe36f5ff3e3514015ab47f9b7b87',
+        },
+        {
+            'key': 'b47ded88d87345720442e805b147c2ebb1287f9e62123153fb995b87d07b0a9a',
+            'tx_hashes': [
+                '729ae2c7b51b0ad2449b91ac8cd06c5f08ab1ea0d6ced0eece3f7a215eac9456',
+            ],
+            'prev': '06aa06c86f6ad6064808362db63c4cdf4a865c11cd7f89833f63a49b2195eaff',
+        },
+    ]
+
+    # Check blockchain blocks
+    blocks = []
+    block_hash = test.blockchain.head
+    while block_hash:
+        block = test.blockchain.elements[block_hash]
+        blocks.append(block)
+        block_hash = block.prev_hash
+    blocks = blocks[::-1]  # oldest to newest
+    assert len(blocks) == len(expected_blocks)
+    for b, exp in zip(blocks, expected_blocks):
+        assert b.block_hash == exp['key']
+        assert b.tx_hashes == exp['tx_hashes']
+        if exp['prev'] is None:
+            assert b.prev_hash is None
+        else:
+            assert b.prev_hash == exp['prev']
+
+    # Expected UTXO pool
+    expected_utxos = set([
+        ('8ef5f3797d0f245c3435067e611a2ef511266da3e7b96d0f8f7549a5fdb2c626', 4),
+        ('1f57f33ad501e031fb7de02ca681876a9a0a3ad6cefedae3b79d6280da7078ce', 0),
+        ('8ef5f3797d0f245c3435067e611a2ef511266da3e7b96d0f8f7549a5fdb2c626', 3),
+        ('729ae2c7b51b0ad2449b91ac8cd06c5f08ab1ea0d6ced0eece3f7a215eac9456', 0),
+        ('8ef5f3797d0f245c3435067e611a2ef511266da3e7b96d0f8f7549a5fdb2c626', 2),
+    ])
+    assert set(test.utxo_pool) == expected_utxos
+
+if __name__ == "__main__":
+    test_scroogecoin()
+    print("All assertions passed.")
