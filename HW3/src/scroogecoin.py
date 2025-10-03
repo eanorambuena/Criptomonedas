@@ -15,18 +15,23 @@ class Scroogecoin:
         #    pass
         print("Processing a new batch of transactions...")
         print(*[json.dumps(json.loads(tx.serialize()), indent=4) for tx in tx_list])
-        print(self.utxo_pool)
+        print(f"[UTXO]> {self.utxo_pool}")
+
         valid_txs: list[Transaction] = []
+        invalid_txs: list[Transaction] = []
+
         for tx in tx_list:
             are_signatures_valid = tx.CheckSignatures()
             is_balance_valid = tx.CheckValues()
             
             are_inputs_unspent = all((tx.id(), inp.nrOutput) in self.utxo_pool for idx, inp in enumerate(tx.inputs))
-            
-            if are_signatures_valid and are_inputs_unspent and is_balance_valid:
-                valid_txs.append(tx)
 
-        for tx in valid_txs:
+            if not (are_signatures_valid and are_inputs_unspent and is_balance_valid):
+                print(f"Transaction {tx.id()} is invalid.")
+                invalid_txs.append(tx)
+                continue
+
+            print(f"Transaction {tx.id()} is valid.")
             self.transactions[tx.id()] = tx
 
             for inp in tx.inputs:
@@ -35,12 +40,19 @@ class Scroogecoin:
             for output in tx.outputs:
                 self.utxo_pool.add((tx.id(), tx.outputs.index(output)))
 
-        # Create new Blocks for the valid transactions
-        for tx in valid_txs:
-            tx_hashes = [tx.id()]
+            valid_txs.append(tx)
+            
+        # Create new Blocks for every two valid transactions
+        valid_tx_pairs = [valid_txs[i:i + 2] for i in range(0, len(valid_txs), 2)]
+        for tx_pair in valid_tx_pairs:
+            tx_hashes = [tx.id() for tx in tx_pair]
             block = Block(tx_hashes, self.blockchain.head)
             self.blockchain.add_block(block)
 
+        print(f"[UTXO]> {self.utxo_pool}")
+        print(f"Valid transactions: {[tx.id() for tx in valid_txs]}")
+        print(f"Invalid transactions: {[tx.id() for tx in invalid_txs]}")
+        
         # Return the list of valid transactions
         return valid_txs
 
