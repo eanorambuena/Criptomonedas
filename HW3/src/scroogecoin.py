@@ -14,12 +14,14 @@ class Scroogecoin:
     def process_transactions(self, tx_list: list[Transaction]):
         # Logging utilities ------------
         IS_LOGGING_ENABLED = False
+        IS_TESTING_ENV = True
+        
         def log(*msgs: str):
             if IS_LOGGING_ENABLED:
                 print(f"[Scroogecoin]> {' '.join(msgs)}")
 
         def get_transaction_label(tx: Transaction):
-            if not IS_LOGGING_ENABLED:
+            if not IS_LOGGING_ENABLED or IS_TESTING_ENV:
                 return f"...{tx.id()[:6]}"
             names ={
                 trans1.id(): "Tx1",
