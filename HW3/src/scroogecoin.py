@@ -11,35 +11,34 @@ class Scroogecoin:
         # set storing references to unspent UTXOs of the form (txID, index)
         self.utxo_pool = set()
 
-    def process_transactions(self, tx_list):
+    def process_transactions(self, tx_list: list[Transaction]):
         #    pass
         print("Processing a new batch of transactions...")
         print(*[json.dumps(json.loads(tx.serialize()), indent=4) for tx in tx_list])
         print(self.utxo_pool)
-        valid_txs = []
+        valid_txs: list[Transaction] = []
         for tx in tx_list:
             are_signatures_valid = tx.CheckSignatures()
-            are_inputs_unspent = all(inp in self.utxo_pool for inp in tx.inputs)
-            are_inputs_valid = all(inp.value > 0 for inp in tx.inputs)
-            are_outputs_valid = all(out.value > 0 for out in tx.outputs)
-            is_balance_valid = sum(inp.value for inp in tx.inputs) >= sum(out.value for out in tx.outputs)
-            if are_signatures_valid and are_inputs_unspent and are_inputs_valid and are_outputs_valid and is_balance_valid:
+            is_balance_valid = tx.CheckValues()
+            
+            are_inputs_unspent = all((tx.id(), inp.nrOutput) in self.utxo_pool for idx, inp in enumerate(tx.inputs))
+            
+            if are_signatures_valid and are_inputs_unspent and is_balance_valid:
                 valid_txs.append(tx)
 
-        # Remove the spent UTXOs from the pool
         for tx in valid_txs:
-            for inp in tx.inputs:
-                self.utxo_pool.discard(inp)
+            self.transactions[tx.id()] = tx
 
-        # Update the UTXO pool with the outputs of the valid transactions
-        for tx in valid_txs:
+            for inp in tx.inputs:
+                self.utxo_pool.discard((tx.id(), inp.nrOutput))
+
             for output in tx.outputs:
-                self.utxo_pool.add(output)
+                self.utxo_pool.add((tx.id(), tx.outputs.index(output)))
 
         # Create new Blocks for the valid transactions
         for tx in valid_txs:
-            block = Block()
-            block.add_transaction(tx)
+            tx_hashes = [tx.id()]
+            block = Block(tx_hashes, self.blockchain.head)
             self.blockchain.add_block(block)
 
         # Return the list of valid transactions
