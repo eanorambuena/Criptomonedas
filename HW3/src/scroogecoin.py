@@ -14,13 +14,9 @@ class Scroogecoin:
     def process_transactions(self, tx_list: list[Transaction]):
         #    pass
         def log(*msgs: str):
-            IS_LOGGING_ENABLED = True
+            IS_LOGGING_ENABLED = False
             if IS_LOGGING_ENABLED:
                 print(f"[Scroogecoin]> {' '.join(msgs)}")
-
-        log("Processing a new batch of transactions...")
-
-        valid_txs: list[Transaction] = []
 
         def get_transaction_label(tx: Transaction):
             names ={
@@ -35,6 +31,10 @@ class Scroogecoin:
             if tx.id() in names:
                 return names[tx.id()]
             return f"...{tx.id()[:6]}"
+
+        log("Processing a new batch of transactions...")
+
+        valid_txs: list[Transaction] = []
 
         for tx in tx_list:
             if tx.id() in self.transactions:
