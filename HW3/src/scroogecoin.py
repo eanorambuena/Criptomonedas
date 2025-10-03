@@ -12,13 +12,15 @@ class Scroogecoin:
         self.utxo_pool = set()
 
     def process_transactions(self, tx_list: list[Transaction]):
-        #    pass
+        # Logging utilities ------------
+        IS_LOGGING_ENABLED = False
         def log(*msgs: str):
-            IS_LOGGING_ENABLED = False
             if IS_LOGGING_ENABLED:
                 print(f"[Scroogecoin]> {' '.join(msgs)}")
 
         def get_transaction_label(tx: Transaction):
+            if not IS_LOGGING_ENABLED:
+                return f"...{tx.id()[:6]}"
             names ={
                 trans1.id(): "Tx1",
                 trans2.id(): "Tx2",
@@ -31,6 +33,7 @@ class Scroogecoin:
             if tx.id() in names:
                 return names[tx.id()]
             return f"...{tx.id()[:6]}"
+        # -------------------------------
 
         log("Processing a new batch of transactions...")
 
