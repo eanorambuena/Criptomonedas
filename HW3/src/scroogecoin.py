@@ -83,8 +83,6 @@ class Scroogecoin:
             block = Block(tx_hashes, self.blockchain.head)
             self.blockchain.add_block(block)
 
-        log(f"[UTXO]> {[(get_transaction_label(self.transactions[txid]), idx) for (txid, idx) in self.utxo_pool]}")
-
         # Return the list of valid transactions
         return valid_txs
 
