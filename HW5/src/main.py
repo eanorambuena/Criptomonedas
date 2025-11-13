@@ -3,56 +3,6 @@ from io import BytesIO
 from network import SimpleNode, GetHeadersMessage, HeadersMessage, GetDataMessage, BLOCK_DATA_TYPE, BlockMessage
 
 
-def main2() -> list[FullBlock]:
-    from io import BytesIO
-    from block import Block, TESTNET_GENESIS_BLOCK
-    print("--- PASO 1: Cargando Bloque Génesis (Manual) ---")
-    
-    # La constante TESTNET_GENESIS_BLOCK es solo el header (80 bytes).
-    # No podemos usar FullBlock.parse() en él porque faltan las TXs.
-    # Usaremos Block.parse() solo para leer el header.
-    
-    try:
-        stream = BytesIO(TESTNET_GENESIS_BLOCK)
-        header = Block.parse(stream)
-        
-        # Ahora, creamos un objeto FullBlock "a mano".
-        # Sabemos que el bloque génesis tiene 1 tx (la coinbase),
-        # pero no la tenemos. Dejamos la lista txs vacía por ahora.
-        # Solo necesitamos el objeto para que .hash() funcione.
-        genesis_block = FullBlock(
-            version=header.version,
-            prev_block=header.prev_block,
-            merkle_root=header.merkle_root,
-            timestamp=header.timestamp,
-            bits=header.bits,
-            nonce=header.nonce,
-            nr_trans=1,  # Lo sabemos por definición
-            txs=[]       # Lo dejamos vacío, .hash() no lo usa
-        )
-        
-        # Esta prueba ahora depende de FullBlock.serialize()
-        hash_obtenido = genesis_block.hash().hex()
-        print(f"Carga manual exitosa. Hash: {hash_obtenido}")
-        
-        # Este es el hash conocido del bloque génesis de testnet
-        hash_conocido = "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"
-        
-        if hash_obtenido == hash_conocido:
-             print("¡Hash coincide con el esperado!")
-             print("Esto prueba que FullBlock.serialize() es correcto.")
-             print("--- PASO 1 SUPERADO ---")
-             return [genesis_block] # Devolvemos el bloque para el siguiente paso
-        else:
-            print(f"ERROR: Hash no coincide. Obtenido: {hash_obtenido}")
-            print(f"                           Esperado: {hash_conocido}")
-            print("Revisa tu implementación de FullBlock.serialize() en block.py")
-            return []
-
-    except Exception as e:
-        print(f"ERROR durante la carga manual: {e}")
-        return []
-
 # Implement the procedure to get the first 20 blocks of bitcoin's testnet here.
 # The blocks should be returned as an ordered list starting from the original.
 def main() -> list[FullBlock]:
@@ -127,8 +77,8 @@ def main() -> list[FullBlock]:
     
     return blocks
 
+
 if __name__ == '__main__':
-    
     all_blocks = main()
     
     if len(all_blocks) == 20:
@@ -136,12 +86,12 @@ if __name__ == '__main__':
         print("Downloaded 20 blocks successfully.")
         
         # --- START TASK (Point 2) ---
-        print("\n--- Step 4 (Point 2): Attempting to validate transactions ---")
+        print("\n--- (Point 2): Attempting to validate transactions ---")
         print("Attempting to validate the first transaction (Coinbase) of the *first downloaded block* (Block #1)...")
         
         try:
-            # CORRECCIÓN: Usamos all_blocks[1] (el primer bloque descargado)
-            # en lugar de all_blocks[0] (el génesis manual).
+            # Usamos all_blocks[1] (el primer bloque descargado)
+            # en lugar de all_blocks[0] (el génesis manual)
             block_to_test = all_blocks[1] 
             
             # The first transaction (index 0) is always the coinbase
@@ -161,7 +111,12 @@ if __name__ == '__main__':
             print("*************************************************")
             print(f"\nThe error was: {type(e).__name__}: {e}")
             print("\nThis confirms the expected behavior for Point 2 of the task.")
-            raise e
+
+            showed_traceback = False # optional: show traceback for more details
+            if showed_traceback:
+                import traceback
+                print("\nFull Traceback:")
+                traceback.print_exc()
         # --- END TASK (Point 2) ---
 
     else:
