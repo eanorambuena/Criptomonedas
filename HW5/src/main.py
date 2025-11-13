@@ -7,7 +7,6 @@ from network import SimpleNode, GetHeadersMessage, HeadersMessage, GetDataMessag
 # The blocks should be returned as an ordered list starting from the original.
 def main() -> list[FullBlock]:
     # --- PASO 1: Cargar Bloque Génesis ---
-    print("--- PASO 1: Cargando Bloque Génesis (Local) ---")
     stream = BytesIO(TESTNET_GENESIS_BLOCK)
     header = Block.parse(stream)
     genesis_block = FullBlock(
@@ -67,13 +66,11 @@ def main() -> list[FullBlock]:
                 break
 
     except Exception as e:
-        print(f"\nERROR DE RED O PARSEO: {e}")
-        print("Revisa la implementación de tus Pasos 1 y 2.")
-        print("Asegúrate de tener todas las importaciones correctas en block.py y network.py")
+        print(f"\nNetwork or parsing: {e}")
         return []
 
-    print(f"\n--- Descarga Completa ---")
-    print(f"Total de bloques en memoria: {len(blocks)}")
+    print(f"\n--- Download Complete ---")
+    print(f"Total number of blocks in memory: {len(blocks)}")
     
     return blocks
 
