@@ -1,10 +1,7 @@
-from block import FullBlock
+from block import FullBlock, Block, TESTNET_GENESIS_BLOCK
+from io import BytesIO
+from network import SimpleNode, GetHeadersMessage, HeadersMessage, GetDataMessage, BLOCK_DATA_TYPE, BlockMessage
 
-
-# Implement the procedure to get the first 20 blocks of bitcoin's testnet here.
-# The blocks should be returned as an ordered list starting from the original.
-def main() -> list[FullBlock]:
-    return []
 
 def main2() -> list[FullBlock]:
     from io import BytesIO
@@ -56,10 +53,9 @@ def main2() -> list[FullBlock]:
         print(f"ERROR durante la carga manual: {e}")
         return []
 
-def main3() -> list[FullBlock]:
-    from io import BytesIO
-    from block import Block, FullBlock, TESTNET_GENESIS_BLOCK
-    from network import SimpleNode, GetHeadersMessage, HeadersMessage, GetDataMessage, Block, BLOCK_DATA_TYPE, BlockMessage
+# Implement the procedure to get the first 20 blocks of bitcoin's testnet here.
+# The blocks should be returned as an ordered list starting from the original.
+def main() -> list[FullBlock]:
     # --- PASO 1: Cargar Bloque Génesis ---
     print("--- PASO 1: Cargando Bloque Génesis (Local) ---")
     stream = BytesIO(TESTNET_GENESIS_BLOCK)
@@ -132,7 +128,7 @@ def main3() -> list[FullBlock]:
     return blocks
 
 if __name__ == '__main__':
-    final_blocks = main3()
+    final_blocks = main()
     
     if len(final_blocks) == 20:
         print("\n--- ¡TAREA 1 COMPLETADA! ---")
