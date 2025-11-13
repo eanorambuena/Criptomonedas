@@ -128,12 +128,36 @@ class FullBlock:
     @classmethod
     def parse(cls, s):
         #FIGURE IT OUT
-        return 1
+        '''Takes a byte stream and parses a full block. Returns a FullBlock object'''
+        header_bytes = s.read(80) # sin el txn_count
+        header = Block.parse(BytesIO(header_bytes))
+        print("Parsing FullBlock...")
+        nr_trans = read_varint(s)
+        print("Parsing FullBlock...")
+        txs = []
+        print(f"nr_trans: {nr_trans}")
+        print(f"header.nr_trans: {header.nr_trans}")
+        for _ in range(nr_trans):
+            tx = Tx.parse(s, testnet=True)
+            txs.append(tx)
+        return cls(header.version, header.prev_block, header.merkle_root, header.timestamp, header.bits, header.nonce, nr_trans, txs)
 
     def serialize(self):
         #FIGURE IT OUT
         # MAKE SURE YOU KNOW WHAT NEEDS TO BE HASHED
-        result = b''
+        '''Returns the 80 byte block header'''
+        # version - 4 bytes, little endian
+        result = int_to_little_endian(self.version, 4)
+        # prev_block - 32 bytes, little endian
+        result += self.prev_block[::-1]
+        # merkle_root - 32 bytes, little endian
+        result += self.merkle_root[::-1]
+        # timestamp - 4 bytes, little endian
+        result += int_to_little_endian(self.timestamp, 4)
+        # bits - 4 bytes
+        result += self.bits
+        # nonce - 4 bytes
+        result += self.nonce
         return result
 
     def hash(self):

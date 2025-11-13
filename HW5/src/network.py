@@ -259,15 +259,16 @@ class BlockMessage:
     command = b'block'
 
     def __init__(self, block):
-        pass
         # Figure it out
+        self.block = block
 
     # This just keeps a single full block which we parse
     @classmethod
     def parse(cls, stream):
         # returns a single block
         # Figure out what it should be
-        pass
+        block = FullBlock.parse(stream)
+        return cls(block)
 
 
 
@@ -290,6 +291,15 @@ class GetDataMessage:
     def serialize(self):
         # IMPLEMENT
         result = b''
+
+        print(self.data)
+        nr_items_to_request = len(self.data)
+        result += encode_varint(nr_items_to_request)
+
+        for data_type, identifier in self.data:
+            result += int_to_little_endian(data_type, 4)
+            result += identifier[::-1] # identifier is the hash
+            
         return result
 
 
