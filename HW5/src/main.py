@@ -128,14 +128,41 @@ def main() -> list[FullBlock]:
     return blocks
 
 if __name__ == '__main__':
-    final_blocks = main()
     
-    if len(final_blocks) == 20:
-        print("\n--- ¡TAREA 1 COMPLETADA! ---")
-        print("Se descargaron los 20 bloques.")
+    all_blocks = main()
+    
+    if len(all_blocks) == 20:
+        print("\n--- TASK (Point 1) COMPLETE! ---")
+        print("Downloaded 20 blocks successfully.")
         
-        # Opcional: Imprimir el último bloque
-        # print("\nÚltimo bloque descargado:")
-        # print(final_blocks[-1])
+        # --- START TASK (Point 2) ---
+        print("\n--- Step 4 (Point 2): Attempting to validate transactions ---")
+        print("Attempting to validate the first transaction (Coinbase) of the *first downloaded block* (Block #1)...")
+        
+        try:
+            # CORRECCIÓN: Usamos all_blocks[1] (el primer bloque descargado)
+            # en lugar de all_blocks[0] (el génesis manual).
+            block_to_test = all_blocks[1] 
+            
+            # The first transaction (index 0) is always the coinbase
+            coinbase_tx = block_to_test.txs[0]
+            
+            print(f"\nValidating TX: {coinbase_tx.id()} from Block {block_to_test.hash().hex()}")
+            
+            # This is where the failure is expected
+            verification_result = coinbase_tx.verify()
+            print(f"Transaction verification result: {verification_result}")
+            
+            print("Unexpected Success! The transaction verified correctly.")
+
+        except Exception as e:
+            print("\n\n*************************************************")
+            print("       VALIDATION ERROR DETECTED (Expected)!")
+            print("*************************************************")
+            print(f"\nThe error was: {type(e).__name__}: {e}")
+            print("\nThis confirms the expected behavior for Point 2 of the task.")
+            raise e
+        # --- END TASK (Point 2) ---
+
     else:
-        print(f"\nFallo la descarga. Se obtuvieron {len(final_blocks)}/20 bloques.")
+        print(f"\nDownload failed. Got {len(all_blocks)}/20 blocks.")
