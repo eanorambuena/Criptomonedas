@@ -131,12 +131,8 @@ class FullBlock:
         '''Takes a byte stream and parses a full block. Returns a FullBlock object'''
         header_bytes = s.read(80) # sin el txn_count
         header = Block.parse(BytesIO(header_bytes))
-        print("Parsing FullBlock...")
         nr_trans = read_varint(s)
-        print("Parsing FullBlock...")
         txs = []
-        print(f"nr_trans: {nr_trans}")
-        print(f"header.nr_trans: {header.nr_trans}")
         for _ in range(nr_trans):
             tx = Tx.parse(s, testnet=True)
             txs.append(tx)

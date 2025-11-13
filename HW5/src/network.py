@@ -267,7 +267,7 @@ class BlockMessage:
     def parse(cls, stream):
         # returns a single block
         # Figure out what it should be
-        block = FullBlock.parse(stream)
+        block = FullBlock.parse(stream) 
         return cls(block)
 
 

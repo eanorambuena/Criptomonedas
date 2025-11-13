@@ -56,7 +56,90 @@ def main2() -> list[FullBlock]:
         print(f"ERROR durante la carga manual: {e}")
         return []
 
+def main3() -> list[FullBlock]:
+    from io import BytesIO
+    from block import Block, FullBlock, TESTNET_GENESIS_BLOCK
+    from network import SimpleNode, GetHeadersMessage, HeadersMessage, GetDataMessage, Block, BLOCK_DATA_TYPE, BlockMessage
+    # --- PASO 1: Cargar Bloque Génesis ---
+    print("--- PASO 1: Cargando Bloque Génesis (Local) ---")
+    stream = BytesIO(TESTNET_GENESIS_BLOCK)
+    header = Block.parse(stream)
+    genesis_block = FullBlock(
+        version=header.version,
+        prev_block=header.prev_block,
+        merkle_root=header.merkle_root,
+        timestamp=header.timestamp,
+        bits=header.bits,
+        nonce=header.nonce,
+        nr_trans=1,  # Dato simbólico
+        txs=[]       # No se usa para el hash
+    )
+    
+    print(f"Bloque 0 (Génesis) cargado. Hash: {genesis_block.hash().hex()}")
+    
+    blocks = [genesis_block]
+    current_hash = genesis_block.hash()
+
+    # --- PASO 3: Conectar y descargar los 19 bloques restantes ---
+    print("\n--- PASO 3: Conectando a la Testnet ---")
+    node = SimpleNode('testnet.programmingbitcoin.com', testnet=True, logging=False)
+    try:
+        node.handshake()
+        print("¡Handshake exitoso!")
+
+        # Bucle para descargar los bloques 1 al 19 (total 20)
+        for i in range(19):
+            print(f"\nDescargando bloque #{i+1}...")
+            
+            # 1. Pedir el siguiente header
+            print("  1. Pidiendo header...")
+            getheaders = GetHeadersMessage(start_block=current_hash)
+            node.send(getheaders)
+            headers_msg = node.wait_for(HeadersMessage)
+            
+            # 2. Obtener el hash del siguiente bloque
+            next_hash = headers_msg.blocks[0].hash()
+            print(f"  2. Hash obtenido: {next_hash.hex()}")
+            
+            # 3. Pedir el bloque completo (¡Prueba tu GetDataMessage.serialize!)
+            print("  3. Pidiendo bloque completo (getdata)...")
+            getdata = GetDataMessage()
+            getdata.add_data(BLOCK_DATA_TYPE, next_hash) # BLOCK_DATA_TYPE es 2
+            node.send(getdata)
+            
+            # 4. Recibir el bloque (¡Prueba tu BlockMessage.parse y FullBlock.parse!)
+            print("  4. Esperando respuesta (block)...")
+            block_msg = node.wait_for(BlockMessage)
+            
+            if block_msg.block:
+                print(f"¡Bloque #{i+1} recibido y parseado!")
+                print(f"   - Transacciones en el bloque: {block_msg.block.nr_trans}")
+                blocks.append(block_msg.block)
+                current_hash = next_hash
+            else:
+                print(f"ERROR: El nodo no envió un bloque válido para el bloque #{i+1}")
+                break
+
+    except Exception as e:
+        print(f"\nERROR DE RED O PARSEO: {e}")
+        print("Revisa la implementación de tus Pasos 1 y 2.")
+        print("Asegúrate de tener todas las importaciones correctas en block.py y network.py")
+        return []
+
+    print(f"\n--- Descarga Completa ---")
+    print(f"Total de bloques en memoria: {len(blocks)}")
+    
+    return blocks
 
 if __name__ == '__main__':
-    for b in main2():
-        print(b)
+    final_blocks = main3()
+    
+    if len(final_blocks) == 20:
+        print("\n--- ¡TAREA 1 COMPLETADA! ---")
+        print("Se descargaron los 20 bloques.")
+        
+        # Opcional: Imprimir el último bloque
+        # print("\nÚltimo bloque descargado:")
+        # print(final_blocks[-1])
+    else:
+        print(f"\nFallo la descarga. Se obtuvieron {len(final_blocks)}/20 bloques.")
