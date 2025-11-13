@@ -79,7 +79,7 @@ def main() -> list[FullBlock]:
 
 
 if __name__ == '__main__':
-    all_blocks = main()
+    all_blocks = main() # TASK (Point 1)
     
     if len(all_blocks) == 20:
         print("\n--- TASK (Point 1) COMPLETE! ---")
