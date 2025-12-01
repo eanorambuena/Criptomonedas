@@ -45,8 +45,9 @@ El contrato fue compilado y desplegado exitosamente en la red de prueba (Testnet
 * **Dirección del Contrato:** 0x138944a021e24BCa53583782874268d34e9a6451
 * **Compiler Version:** 0.8.26
 
+> **Nota para la revisión:** Debido a los modificadores de seguridad implementados (`soloComprador`, `soloArbitro`), esta instancia desplegada solo permite la interacción desde la dirección del autor. Para probar la funcionalidad completa, se debe desplegar una nueva instancia utilizando el código `.sol` adjunto con las direcciones propias del evaluador.
+
 ## 5. Referencias
 
 * Solidity Documentation. (n.d.). *Smart Contract Security Best Practices*. Recuperado de https://docs.soliditylang.org/
 * OpenZeppelin. (n.d.). *ReentrancyGuard Source Code*. Recuperado de https://github.com/OpenZeppelin/
-* Antonopoulos, A. M., & Wood, G. (2018). *Mastering Ethereum*. O'Reilly Media.
